@@ -1,9 +1,13 @@
 Class Toboggan.Map Extends %Persistent
 {
 
-// Property map As array Of Type;
-
 Property map As %ArrayOfDataTypes;
+
+Property right As %ArrayOfDataTypes;
+
+Property down As %ArrayOfDataTypes;
+
+Property trees As %ArrayOfDataTypes;
 
 ClassMethod Import(dir As %String = "/usr/local/day3.txt") As %Status
 {
@@ -19,8 +23,7 @@ ClassMethod Import(dir As %String = "/usr/local/day3.txt") As %Status
     // create a new variable called sc
     set sc = file.LinkToFile(dir)
     set count=1
-    /// loop to go through each line and save it to a global that increments
-    
+    /// loop to go through the day3 txt file 
     WHILE ('file.AtEnd) 
     {
         set delim=" "
@@ -30,19 +33,14 @@ ClassMethod Import(dir As %String = "/usr/local/day3.txt") As %Status
         write line,!
 
         
-        //do map.SetAt($PIECE(line, delim),count)
-    
-        //write map.Next(count)
+        // Extract each tree position and assign to a new array called map
         set map(count)=$PIECE(line, delim)
         set countdown=$LENGTH(line,delim)
         set count=$INCREMENT(count)        
     }
         write !,*32
-        write !, "Double checking to see if the fields are set"
+        write !, "Double checking to see if the map array is set"
         write !,*32
-
-      
-
         
         write !, "1st element of map array ", map(1)
         write !, "2nd element of map array ", map(2)
@@ -50,14 +48,14 @@ ClassMethod Import(dir As %String = "/usr/local/day3.txt") As %Status
         write !, "Import process complete"
         write *32
         
-        do ..Setup(.map)
+        do ..Setup(.map,.right)
 }
 
-ClassMethod Setup(ByRef map As %ArrayOfDataTypes) As %Status
+ClassMethod Setup(ByRef map As %ArrayOfDataTypes, ByRef right As %ArrayOfDataTypes,ByRef down As %ArrayOfDataTypes, ByRef trees As %ArrayOfDataTypes) As %Status
 {
     
-    // set up the array            
-    set map=##class(%ArrayOfDataTypes).%New()                            
+    // set up the fields of the map array            
+                              
     do map.SetAt(map(1),"1")
     do map.SetAt(map(2),"2")
     do map.SetAt(map(3),"3")
@@ -71,9 +69,8 @@ ClassMethod Setup(ByRef map As %ArrayOfDataTypes) As %Status
     do map.SetAt(map(11),"11")
         
      
-
-    set right=##class(%ArrayOfDataTypes).%New()
-                    
+    // set up the right array
+                   
     do right.SetAt("1","1")
     do right.SetAt("3","2")
     do right.SetAt("5","3")
@@ -82,7 +79,7 @@ ClassMethod Setup(ByRef map As %ArrayOfDataTypes) As %Status
 
     
 
-    set down=##class(%ArrayOfDataTypes).%New()
+    //set up the down array
                                 
     do down.SetAt("1","1")
     do down.SetAt("1","2")
@@ -91,17 +88,18 @@ ClassMethod Setup(ByRef map As %ArrayOfDataTypes) As %Status
     do down.SetAt("2","5")
 
     
-    set trees=##class(%ArrayOfDataTypes).%New()
-    do down.SetAt("0","1")
-    do down.SetAt("0","2")
-    do down.SetAt("0","3")
-    do down.SetAt("0","4")
-    do down.SetAt("0","5")
+    //set up the trees array
+    do trees.SetAt("0","1")
+    do trees.SetAt("0","2")
+    do trees.SetAt("0","3")
+    do trees.SetAt("0","4")
+    do trees.SetAt("0","5")
 
     //do ..partOne(.map)
     do ..partTwo(.map,.right,.down,.trees)
 }
 
+/// Part two change the row and columns so that they the positions are dynamic
 ClassMethod partTwo(ByRef map As %ArrayOfDataTypes, ByRef right As %ArrayOfDataTypes, ByRef down As %ArrayOfDataTypes, ByRef trees As %ArrayOfDataTypes) As %Status
 {
         
@@ -118,18 +116,18 @@ ClassMethod partTwo(ByRef map As %ArrayOfDataTypes, ByRef right As %ArrayOfDataT
         write "colMax Length:=",colMax ,!
 
         if (row < rowMax) {
-            // Count the array nodes and then find out the length of the array
+            
             write "Next Record"
             write *32 ,!
             set delim="."
 
-            
+            // Loop over the array and find # set the tree count and column and row fields that are set dynamically
             for i=1:1:map.Count() { 
                 set map(i)=map.GetAt(i)
                 write *32 ,!
                 write "# Numbers: " ,!
                 write $LOCATE(map(i),"#") ,!
-                //write $LOCATE(map(i),"\B#"),!
+            
                 set trees(i) = $LOCATE(map(i),"#") 
                 write "Number of trees: ",trees(i) ,!                             
             
@@ -149,6 +147,7 @@ ClassMethod partTwo(ByRef map As %ArrayOfDataTypes, ByRef right As %ArrayOfDataT
                 
             } 
             
+            // output the tree count and product to the screen
             write "Trees 1: ",trees(1) ,!
 
             set product = trees(1) * trees(2) * trees(3) * trees(4) * trees(5)
@@ -183,8 +182,8 @@ ClassMethod partOne(ByRef map As %ArrayOfDataTypes) As %Status
             set trees=1
 
 
-            // Map over the array with our piece 
-            // Extract the number of trees in to a new variable and increment it
+            // Map over the array with our piece and extract the positions
+            // set the trees and assign a column and row statically
             
             For reps=countdown:-1:1 {
                 set extract=$PIECE(map(i),delim,trees)
@@ -194,7 +193,7 @@ ClassMethod partOne(ByRef map As %ArrayOfDataTypes) As %Status
                 write !,"All done!"
                                                  
                                                  
-                // add 3 to the column and output the row and column numbers
+                
                 set column = column+3 
                 write *32 ,!
                 write "Row:",row ,!
@@ -203,7 +202,6 @@ ClassMethod partOne(ByRef map As %ArrayOfDataTypes) As %Status
                 write *32 ,!
                                                 
                 // Increment the row and column numbers only if the column hasn't got to the end
-                
                 if (column >= colMax) {
                     set column = colMax +1 
                     set row = $INCREMENT(row)
